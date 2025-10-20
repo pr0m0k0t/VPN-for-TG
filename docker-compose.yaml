@@ -1,0 +1,49 @@
+services:
+    vpn-bot:
+        build: .
+        restart: always
+        volumes:
+            - ./:/app
+        working_dir: /app
+        command: python main.py
+        environment:
+            - MYSQL_HOST=${MYSQL_HOST}
+            - MYSQL_USER=${DB_USER}
+            - MYSQL_PASSWORD=${DB_PASSWORD}
+            - MYSQL_DATABASE=${DB_NAME}
+        depends_on:
+            - mysql-db
+
+    web-part:
+        build: .
+        ports:
+            - "5000:5000"
+        depends_on:
+            - vpn-bot
+            - mysql-db
+        restart: always
+        command: python app.py
+        environment:
+            - DB_HOST=${MYSQL_HOST}
+            - DB_USER=${DB_USER}
+            - DB_PASSWORD=${DB_PASSWORD}
+            - DB_NAME=${DB_NAME}
+        volumes:
+            - ./:/app
+        working_dir: /app
+    mysql-db:
+        image: mysql:8.0
+        restart: always
+        environment:
+            - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+            - MYSQL_DATABASE=${DB_NAME}
+            - MYSQL_USER=${DB_USER}
+            - MYSQL_PASSWORD=${DB_PASSWORD}
+        ports:
+            - "3306:3306"
+        volumes:
+            - mysql-data:/var/lib/mysql
+
+volumes:
+    mysql-data:
+
