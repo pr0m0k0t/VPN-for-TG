@@ -24,6 +24,7 @@ bot = Bot(token=BOT_TOKEN,
 
 @client_router.message(CommandStart())
 async def cmd_start(message: Message, state: FSMContext):
+
     user_id = message.from_user.id
     FREE_DAYS_SECONDS = 3 * 60 * 60 * 24
     text = message.text or ""
@@ -118,7 +119,9 @@ async def back_to_subs(call: CallbackQuery, state: FSMContext):
 
 
 @client_router.callback_query(lambda c: c.data == "subscribe")
-async def process_subscribe(call: CallbackQuery):
+async def process_subscribe(call: CallbackQuery, state: FSMContext):
+    user_id = call.from_user.id
+    await state.update_data(user_id=user_id)
     await call.message.edit_caption(photo=FSInputFile("logo.jpg"),
         caption= "Выберите тариф подписки:",
         reply_markup=subscribe_kb)
@@ -169,6 +172,9 @@ async def process_back(call: CallbackQuery):
 
 @client_router.callback_query(lambda c: c.data.startswith("plan_"))
 async def process_plan(call: CallbackQuery, state: FSMContext):
+    user= await state.get_data()
+    user_id = user["user_id"]
+    print(user_id)
     months = int(call.data.split("_")[1])
     await call.message.delete()
     mes1 = await call.message.answer_photo(photo=FSInputFile("logo.jpg"),
@@ -197,7 +203,7 @@ async def process_plan(call: CallbackQuery, state: FSMContext):
         currency="RUB",
         prices=prices,
         start_parameter="vpn-subscription",
-        payload="vpn-payment-payload"
+        payload=f"{user_id}:{months}"
     )
     await state.update_data(chat_id =invoice.chat.id, message_id = invoice.message_id)
     await call.message.answer('Если хотите изменить выбор подписки, то нажмите кнопку ниже',
@@ -255,6 +261,9 @@ async def select_device(call: CallbackQuery):
 
 @client_router.callback_query(lambda c: c.data.startswith("plandeactivate_"))
 async def process_plan(call: CallbackQuery, state: FSMContext):
+    user= await state.get_data()
+    user_id = user["user_id"]
+    print(user_id)
     months = int(call.data.split("_")[1])
     await call.message.delete()
     mes1 = await call.message.answer_photo(photo=FSInputFile("logo.jpg"),
@@ -283,7 +292,7 @@ async def process_plan(call: CallbackQuery, state: FSMContext):
         currency="RUB",
         prices=prices,
         start_parameter="vpn-subscription",
-        payload="vpn-payment-payload"
+        payload=f"{user_id}:{months}"
     )
     await state.update_data(chat_id =invoice.chat.id, message_id = invoice.message_id)
     await call.message.answer('Если хотите изменить выбор подписки, то нажмите кнопку ниже',
@@ -292,6 +301,8 @@ async def process_plan(call: CallbackQuery, state: FSMContext):
 @client_router.callback_query(F.data == "begin")
 @client_router.callback_query(F.data == "back_to_subs_deactivate")
 async def back_to_subs(call: CallbackQuery, state: FSMContext):
+    user_id = call.message.from_user.id
+    await state.update_data(user_id=user_id)
     username = call.from_user.username
     try:
         await call.message.delete()
