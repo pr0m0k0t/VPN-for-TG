@@ -16,7 +16,7 @@ bot = Bot(token=BOT_TOKEN,
           default=DefaultBotProperties(parse_mode=ParseMode.MARKDOWN_V2))
 
 async def remind_expired_users():
-    """Асинхронная проверка срока действия пользователей"""
+    """Асинхронное напоминание о приближении конца срока действия пользователей"""
     While True:
           now = int(time.time())
           users = db.get_all_users()
@@ -75,3 +75,4 @@ async def remind_about_expiry():
                         print(f"Ошибка для {user_id}: {e}")
 
         await asyncio.sleep(1000)
+
