@@ -17,21 +17,23 @@ bot = Bot(token=BOT_TOKEN,
 
 async def remind_expired_users():
     """Асинхронная проверка срока действия пользователей"""
-    now = int(time.time())
-    users = db.get_all_users()
-    expired_users = [u for u in users if u.get("expiry_time") and u["expiry_time"] < now]
-
-    if expired_users:
-        print(f"Истёкших пользователей: {len(expired_users)}")
-        for user in expired_users:
-            user_id = user.get("user_id")
-            username = user.get("username")
-            await bot.send_message(user_id,
-                                   remind_for_deactivate(username),
-                                   parse_mode=ParseMode.MARKDOWN_V2,
-                                   reply_markup=begin_pay_kb)
-    else:
-        print("Нет пользователей с истекшим сроком.")
+    While True:
+          now = int(time.time())
+          users = db.get_all_users()
+          expired_users = [u for u in users if u.get("expiry_time") and u["expiry_time"] < now]
+          
+          if expired_users:
+              print(f"Истёкших пользователей: {len(expired_users)}")
+              for user in expired_users:
+                  user_id = user.get("user_id")
+                  username = user.get("username")
+                  await bot.send_message(user_id,
+                                         remind_for_deactivate(username),
+                                         parse_mode=ParseMode.MARKDOWN_V2,
+                                         reply_markup=begin_pay_kb)
+          else:
+              print("Нет пользователей с истекшим сроком.")    
+          await asyncio.sleep(1000)
 
 async def check_expired_users():
     """Асинхронная проверка срока действия пользователей"""
@@ -71,4 +73,5 @@ async def remind_about_expiry():
                                                reply_markup=subscribe_kb)
                     except Exception as e:
                         print(f"Ошибка для {user_id}: {e}")
+
         await asyncio.sleep(1000)
