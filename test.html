@@ -65,8 +65,10 @@
   <p>Это переходная страница для автоматического импрота в приложение</p>
   <div class="button-container">
     <form method="POST" action="/button_click">
-      <button type="submit" name="button_name" value="button1">Перейти в приложение</button>
+      <a href="{{ import_link|safe }}">
+      <button>Импортировать в Hiddify</button>
     </form>
   </div>
 </body>
 </html>
+
